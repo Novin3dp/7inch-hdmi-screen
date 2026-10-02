@@ -40,11 +40,11 @@ PL = {
     # --- HDMI + LT8619C
     "J1": (3.5, J1Y, 270),
     "U1": (CX, CY, 0),
-    "Y1": (29.6, 8.3, 0),
-    "C9": (26.6, 9.15, 180),
-    "C10": (32.6, 7.45, 0),
-    "R10": (21.8, 24.0, 270),       # REXT (pin 16), escapes downwards
-    "R12": (25.6, 24.6, 90),       # RESET_N pull-down
+    "Y1": (29.6, 7.7, 0),
+    "C9": (26.4, 8.55, 180),
+    "C10": (32.8, 6.85, 0),
+    "R10": (22.4, 23.975, 270),     # REXT (pin 16), escapes downwards
+    "R12": (24.6, 27.4, 90),       # RESET_N pull-down
     "R13": (50.6, 12.4, 0),        # CSDA pull-up
     "R14": (50.6, 13.5, 0),        # CSCL pull-up
     "R11": (33.6, 13.8, 0),        # PCLK series (pin 56)
@@ -57,21 +57,21 @@ PL = {
     # LT8619C decoupling (one per supply pin)
     "C11": (18.9, 12.4, 180),      # pin1  +1V8A
     "C15": (19.6, 22.4, 90),      # pin13 +1V8A
-    "C12": (14.69, 14.7, 180),     # pin4  VTERM   (between TMDS pairs)
-    "C13": (14.69, 16.9, 180),     # pin7  VCCA33
-    "C14": (14.69, 19.1, 180),     # pin10 VTERM
+    "C12": (14.6, 14.7, 180),     # pin4  VTERM   (between TMDS pairs)
+    "C13": (14.6, 16.9, 180),     # pin7  VCCA33
+    "C14": (14.6, 19.1, 180),     # pin10 VTERM
     "C16": (23.4, 24.4, 270),      # pin20 +3V3
     "C17": (24.5, 24.4, 270),      # pin25 +1V8
-    "C18": (30.4, 24.0, 270),      # pin36 +3V3 (TTL)
+    "C18": (33.0, 23.6, 0),      # pin36 +3V3 (TTL)
     "C19": (33.6, 12.6, 0),        # pin57 +3V3 (TTL)
-    "C20": (33.41, 11.4, 0),       # pin58 +1V8   (pre-routed)
-    "C21": (33.41, 10.3, 0),       # pin59 +1V8A  (pre-routed)
-    "C22": (24.9, 10.3, 90),       # pin62 VCCA33_XTAL
-    "C23": (25.9, 10.3, 90),       # pin64 +3V3
+    "C20": (33.9, 11.4, 0),       # pin58 +1V8   (pre-routed)
+    "C21": (33.9, 9.9, 0),       # pin59 +1V8A  (pre-routed)
+    "C22": (24.4, 10.1, 90),       # pin62 VCCA33_XTAL
+    "C23": (25.9, 10.1, 90),       # pin64 +3V3
     "C24": (23.0, 10.6, 90),       # pin67 +1V8
     "C25": (35.0, 3.4, 90),
     "C26": (23.6, 26.6, 0),
-    "FB1": (21.0, 26.6, 90),
+    "FB1": (21.0, 27.0, 90),
     "C7": (19.8, 25.6, 90),
     "FB2": (16.0, 25.0, 90),
     "C8": (14.8, 24.6, 90),
@@ -105,7 +105,6 @@ PL = {
     "J5": (66.5, 2.2, 90),
     # --- touch
     "J4": (71.0, H - 4.5, 0),
-    "J6": (W - 3.2, 36.6, 90),
     "R35": (63.4, 38.6, 90),
     "R36": (64.5, 38.6, 90),
     "R37": (65.6, 38.6, 90),
@@ -199,20 +198,20 @@ def preroute(board, net):
     for cp, ym in [(4, 14.7), (7, 16.9), (10, 19.1)]:
         yc = chip_y(cp)
         dx1 = abs(ym - yc) / tan30
-        track(board, net("+3V3A"), [(X_PAD, yc), (X0, yc), (X0 - dx1, ym), (16.0, ym), (15.2, ym)], w=0.18)
+        track(board, net("+3V3A"), [(X_PAD, yc), (X0, yc), (X0 - dx1, ym), (16.0, ym), (15.375, ym)], w=0.18)
         via(board, net("+3V3A"), 16.0, ym)
-        track(board, net("GND"), [(14.18, ym), (13.4, ym)], w=0.3)
-        via(board, net("GND"), 13.4, ym)
+        track(board, net("GND"), [(13.825, ym), (13.0, ym)], w=0.3)
+        via(board, net("GND"), 13.0, ym)
     # +3V3A vias tied together on the bottom layer, down to FB2 (+3V3 -> +3V3A)
     track(board, net("+3V3A"), [(16.0, 14.7), (16.0, 23.5)], layer=pcbnew.B_Cu, w=0.3)
     via(board, net("+3V3A"), 16.0, 23.5)
     track(board, net("+3V3A"), [(16.0, 23.5), (16.0, 24.225)], w=0.3)
     # pin 1 (+1V8A): up to a via + decap above the TMDS group
     y1 = chip_y(1)
-    track(board, net("+1V8A"), [(X_PAD, y1), (X0, y1), (X0 - 1.0 / tan30, y1 - 1.0), (19.41, y1 - 1.0)], w=0.18)
+    track(board, net("+1V8A"), [(X_PAD, y1), (X0, y1), (X0 - 1.0 / tan30, y1 - 1.0), (19.675, y1 - 1.0)], w=0.18)
     via(board, net("+1V8A"), 20.0, y1 - 1.0)
-    track(board, net("GND"), [(18.39, 12.4), (17.6, 12.4)], w=0.3)
-    via(board, net("GND"), 17.6, 12.4)
+    track(board, net("GND"), [(18.125, 12.4), (17.3, 12.4)], w=0.3)
+    via(board, net("GND"), 17.3, 12.4)
     # pin 13 (+1V8A): short, steep escape below the D2+ line to a via
     y13 = chip_y(13)
     track(board, net("+1V8A"), [(X_PAD, y13), (X0, y13), (21.0, 19.0)], w=0.18)
@@ -220,7 +219,7 @@ def preroute(board, net):
     # +1V8A bottom trunk: pin-1 via -> pin-13 via -> FB1 (+1V8 -> +1V8A)
     track(board, net("+1V8A"), [(20.0, 12.4), (21.0, 13.4), (21.0, 24.5)], layer=pcbnew.B_Cu, w=0.3)
     via(board, net("+1V8A"), 21.0, 24.5)
-    track(board, net("+1V8A"), [(21.0, 24.5), (21.0, 25.825)], w=0.3)
+    track(board, net("+1V8A"), [(21.0, 24.5), (21.0, 26.225)], w=0.3)
     # USB-C: join the duplicated D+/D- contacts (both plug orientations)
     #   D+ (B6 y23.25, A6 y24.25): behind the pads on top;  D- (A7, B7): in front, via + bottom link
     jx, jy = W - 3.65, 24.0
@@ -236,13 +235,14 @@ def preroute(board, net):
         via(board, net("VBUS"), xr - 0.7, jy + dy)
     track(board, net("VBUS"), [(xr - 0.7, jy - 2.45), (xr - 0.7, jy + 2.45)], layer=pcbnew.B_Cu, w=0.4)
     # pins 58 (VDD18) / 59 (PVCC18, PLL): nested escapes to their decaps on the right
-    track(board, net("+1V8"), [(CX + 3.6, CY - 4.4), (CX + 3.6, 11.4), (32.9, 11.4)], w=0.2)
-    track(board, net("+1V8A"), [(CX + 3.2, CY - 4.4), (CX + 3.2, 10.3), (32.9, 10.3)], w=0.2)
-    for y in (11.4, 10.3):
-        track(board, net("GND"), [(33.92, y), (34.6, y)], w=0.3)
-        via(board, net("GND"), 34.6, y)
+    track(board, net("+1V8"), [(CX + 3.6, CY - 4.4), (CX + 3.6, 11.4), (33.125, 11.4)], w=0.2)
+    track(board, net("+1V8A"), [(CX + 3.2, CY - 4.4), (CX + 3.2, 9.9), (33.125, 9.9)], w=0.2)
+    for y in (11.4, 9.9):
+        track(board, net("GND"), [(34.675, y), (35.4, y)], w=0.3)
+        via(board, net("GND"), 35.4, y)
     # pins 65 (CSDA), 66 (CSCL), 67 (VDD18): staggered escapes so both I2C lines get a via
-    track(board, net("+1V8"), [(CX, CY - 4.4), (CX, 12.05), (CX - 0.17, 11.88), (CX - 1.4, 11.88)], w=0.25)
+    if PREP:   # only reserves the escape during autorouting; Freerouting feeds pin 67 from below
+        track(board, net("+1V8"), [(CX, CY - 4.4), (CX, 12.05), (CX - 0.17, 11.88), (CX - 1.4, 11.88)], w=0.25)
     track(board, net("LT_SCL"), [(CX + 0.4, CY - 4.4), (CX + 0.4, 11.7), (CX + 0.1, 11.4), (CX + 0.1, 10.9)])
     via(board, net("LT_SCL"), CX + 0.1, 10.9)
     track(board, net("LT_SDA"), [(CX + 0.8, CY - 4.4), (CX + 0.8, 10.35)])
@@ -256,7 +256,7 @@ def preroute(board, net):
     track(board, net("VCOM"), [(24.45, 42.3), (24.45, 41.44)], w=0.25)
     # REXT: straight down from pin 16, clear of the unused pins 17..19
     y16 = chip_y(16)
-    track(board, net("LT_REXT"), [(X_PAD, y16), (21.8, y16), (21.8, 23.49)], w=0.2)
+    track(board, net("LT_REXT"), [(X_PAD, y16), (21.8, y16), (21.8, 22.4), (22.4, 23.0), (22.4, 23.15)], w=0.2)
     # HDMI GND pins: via in front of each pad (under the receptacle body)
     for hp in (2, 5, 8, 11, 17):
         y = hdmi_y(hp)
@@ -264,10 +264,10 @@ def preroute(board, net):
         via(board, net("GND"), 6.9, y)
 
 
-FIXED = {"C22", "C23", "TP7", "C20", "C21", "J1", "U1", "J2", "J3", "J4", "J6", "U10", "U2", "U3", "Y1", "C11", "C12", "C13", "C14",
+FIXED = {"C22", "C23", "TP7", "C20", "C21", "J1", "U1", "J2", "J3", "J4", "U10", "U2", "U3", "Y1", "C11", "C12", "C13", "C14",
          "R10", "FB1", "FB2", "J5", "U7", "U9", "L1", "L2"}
 # areas reserved for routing (no footprints): TMDS corridor and RGB bus field
-NO_PLACE = [(8.0, 11.6, 22.3, 22.0), (25.0, 26.0, 52.0, 36.0)]
+NO_PLACE = [(8.0, 11.6, 22.3, 22.0), (25.0, 26.0, 52.0, 36.0), (25.6, 21.6, 32.0, 26.0)]
 
 
 def fp_box(fp, margin=0.0):
@@ -371,6 +371,7 @@ def outline(board, r=2.0):
     add_arc(board, r, H - r, r, H, 90, L)
 
 
+PREP = True   # building the board for Freerouting (vs. the final board)
 DRAW = True   # False: only record pre-route geometry (final build takes the copper from the .ses)
 PRE = []      # recorded pre-route boxes (x1, y1, x2, y2) incl. half width
 
@@ -513,8 +514,9 @@ def build():
 
 def make(prep):
     """prep=True: board for Freerouting (pre-routes locked, temp keepout).  prep=False: final."""
-    global DRAW
+    global DRAW, PREP
     DRAW = True
+    PREP = prep
     PRE.clear()
     board, net = build()
     preroute(board, net)

@@ -52,23 +52,24 @@ F_LED0603 = "LED_SMD:LED_0603_1608Metric"
 F_TP = "TestPoint:TestPoint_Pad_D1.0mm"
 
 
-def R(ref, val, a, b, sheet, fp=F_R0402, mpn="", lcsc="", dnp=False):
+def R(ref, val, a, b, sheet, fp=F_R0603, mpn="", lcsc="", dnp=False):
     return P(ref, "Device", "R", val, fp, {1: a, 2: b}, sheet, mpn=mpn, lcsc=lcsc, dnp=dnp)
 
 
-def C(ref, val, a, b, sheet, fp=F_C0402, mpn="", lcsc="", dnp=False):
+def C(ref, val, a, b, sheet, fp=F_C0603, mpn="", lcsc="", dnp=False):
     return P(ref, "Device", "C", val, fp, {1: a, 2: b}, sheet, mpn=mpn, lcsc=lcsc, dnp=dnp)
 
 
 # common LCSC basic parts (JLCPCB "basic" library)
-L_100N = "C1525"     # 100nF 0402 X7R 16V
-L_1U = "C52923"      # 1uF 0402 X5R 25V
+L_100N = "C14663"    # 100nF 0603 X7R 50V
+L_1U = "C15849"      # 1uF 0603 X5R 25V
 L_10U0603 = "C19702"  # 10uF 0603 X5R 10V
 L_22U0805 = "C45783"  # 22uF 0805 X5R 25V
-L_10K = "C25744"
-L_4K7 = "C25900"
-L_1K = "C11702"
-L_5K1 = "C25905"
+L_10K = "C25804"     # 0603 1%
+L_4K7 = "C23162"
+L_1K = "C21190"
+L_5K1 = "C23186"
+L_100K = "C25803"
 L_22P = "C1555"
 
 # =====================================================================
@@ -122,7 +123,7 @@ P("J1", "Connector", "HDMI_A", "HDMI-A receptacle", "Connector_HDMI:HDMI_A_Amphe
    13: NC, 14: NC, 15: "HDMI_SCL", 16: "HDMI_SDA", 17: "GND", 18: "HDMI_5V",
    19: "HDMI_HPD", "SH": "GND"}, S, mpn="Amphenol 10029449-001RLF (or equivalent SMT HDMI-A)")
 R("R3", "1k", "LT_HPD", "HDMI_HPD", S, lcsc=L_1K)
-R("R4", "100k", "HDMI_HPD", "GND", S, lcsc="C25741")
+R("R4", "100k", "HDMI_HPD", "GND", S, lcsc=L_100K)
 R("R5", "47k", "HDMI_SCL", "HDMI_5V", S, lcsc="C25792")
 R("R6", "47k", "HDMI_SDA", "HDMI_5V", S, lcsc="C25792")
 R("R8", "22k", "HDMI_5V", "HDMI5V_DET", S, lcsc="C25768")
@@ -195,10 +196,10 @@ C("C28", "100nF", "+3V3", "GND", S, lcsc=L_100N)
 # --- bias supply, switched by MCU (BIAS_EN) for correct power sequencing
 P("Q1", "Transistor_FET", "AO3401A", "AO3401A", F_SOT23, {1: "BIAS_G", 2: "+5V", 3: "BOOST_IN"}, S,
   mpn="AO3401A", lcsc="C15127")
-R("R22", "100k", "BIAS_G", "+5V", S, lcsc="C25741")
+R("R22", "100k", "BIAS_G", "+5V", S, lcsc=L_100K)
 P("Q2", "Transistor_FET", "2N7002", "2N7002", F_SOT23, {1: "BIAS_EN", 2: "GND", 3: "BIAS_G"}, S,
   mpn="2N7002", lcsc="C8545")
-R("R23", "100k", "BIAS_EN", "GND", S, lcsc="C25741")
+R("R23", "100k", "BIAS_EN", "GND", S, lcsc=L_100K)
 C("C29", "10uF", "BOOST_IN", "GND", S, fp=F_C0603, lcsc=L_10U0603)
 P("U7", "Regulator_Switching", "TPS61040DBV", "TPS61040", F_SOT235,
   {1: "AVDD_SW", 2: "GND", 3: "AVDD_FB", 4: "BOOST_IN", 5: "BOOST_IN"}, S,
@@ -208,7 +209,7 @@ P("L1", "Device", "L", "10uH 0.6A", "Inductor_SMD:L_Taiyo-Yuden_NR-30xx",
 P("D1", "Device", "D_Schottky", "MBR0530", F_SOD123, {1: "AVDD", 2: "AVDD_SW"}, S,
   mpn="MBR0530T1G", lcsc="C80521")
 R("R24", "750k 1%", "AVDD", "AVDD_FB", S, lcsc="C25813")
-R("R25", "100k 1%", "AVDD_FB", "GND", S, lcsc="C25741")
+R("R25", "100k 1%", "AVDD_FB", "GND", S, lcsc=L_100K)
 C("C30", "10pF", "AVDD", "AVDD_FB", S, lcsc="C32949")
 C("C31", "4.7uF 25V", "AVDD", "GND", S, fp=F_C0805, lcsc="C1779")
 C("C32", "4.7uF 25V", "AVDD", "GND", S, fp=F_C0805, lcsc="C1779")
@@ -251,7 +252,7 @@ C("C42", "2.2uF 50V", "VLED_A", "GND", S, fp=F_C1206, lcsc="C13832")
 C("C43", "10uF", "+5V", "GND", S, fp=F_C0603, lcsc=L_10U0603)
 C("C44", "220nF", "BL_COMP", "GND", S, lcsc="C16772")
 R("R31", "1.1R 1%", "VLED_K", "GND", S, fp=F_R0805, lcsc="C17520")
-R("R32", "100k", "BL_PWM", "GND", S, lcsc="C25741")
+R("R32", "100k", "BL_PWM", "GND", S, lcsc=L_100K)
 
 # =====================================================================
 # Sheet 4: MCU (STM32F072) + touch connector
@@ -283,9 +284,6 @@ TP = {1: "GND", 2: "+3V3", 3: "TP_INT", 4: "TP_SCL", 5: "TP_SDA", 6: "TP_RST"}
 P("J4", "Connector_Generic_MountingPin", "Conn_01x06_MountingPin", "Touch FPC 6P 0.5mm",
   "Connector_FFC-FPC:Hirose_FH12-6S-0.5SH_1x06-1MP_P0.50mm_Horizontal",
   dict(TP, MP="GND"), S, mpn="Hirose FH12-6S-0.5SH (check contact side of your CTP)", lcsc="")
-P("J6", "Connector_Generic_MountingPin", "Conn_01x06_MountingPin", "Touch alt. JST-SH 6P",
-  "Connector_JST:JST_SH_SM06B-SRSS-TB_1x06-1MP_P1.00mm_Horizontal", dict(TP, MP="GND"), S,
-  mpn="JST SM06B-SRSS-TB", dnp=True)
 R("R35", "2.2k", "TP_SCL", "+3V3", S, lcsc="C25879")
 R("R36", "2.2k", "TP_SDA", "+3V3", S, lcsc="C25879")
 R("R37", "10k", "TP_RST", "+3V3", S, lcsc=L_10K)
@@ -298,7 +296,7 @@ SHEETS = [("power", "Power input (USB-C) and regulators"),
 
 # Only LCSC numbers that were verified are kept; everything else is matched by MPN/value.
 _LCSC_OK = {L_100N, L_1U, L_10U0603, L_10K, L_4K7, L_1K, L_5K1, "C165948", "C7519", "C6186",
-            "C15127", "C8545", "C25741"}
+            "C15127", "C8545", L_100K}
 for _p in PARTS:
     if _p.lcsc not in _LCSC_OK:
         _p.lcsc = ""
