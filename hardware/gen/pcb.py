@@ -527,6 +527,15 @@ def make(prep):
         # pours only in the final board: GND is routed as a normal net, the pours just add copper
         zone(board, gnd, pcbnew.F_Cu, full, name="GND_TOP")
         zone(board, gnd, pcbnew.B_Cu, full, name="GND_BOT")
+    if not prep:
+        for txt, y, size in (("novin3dp.ir", 17.2, 1.3), ("HDMI7", 19.4, 1.3)):
+            t = pcbnew.PCB_TEXT(board)
+            t.SetText(txt)
+            t.SetLayer(pcbnew.F_SilkS)
+            t.SetTextSize(pcbnew.VECTOR2I(mm(size), mm(size)))
+            t.SetTextThickness(mm(0.2))
+            t.SetPosition(pt(44.8, y))
+            board.Add(t)
     if prep:
         # keep the bottom layer under the TMDS lines free of other signals
         keepout(board, pcbnew.B_Cu, [(6.0, 11.8), (22.4, 11.8), (22.4, 22.2), (6.0, 22.2)], tracks=True, vias=False)
