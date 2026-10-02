@@ -115,7 +115,6 @@ def fpc50():
             if sx == -12.66 and ex == -12.66:
                 st[1], en[1] = 12.66, 12.66
         out.append(e)
-    out.append(fp_text("user", "pin1", 12.3, -3.4, "F.SilkS", 0.8))
     out.append(fp_text("user", "FPC IN (contacts up)", 0, 3.0, "F.Fab", 0.6))
     return name, out
 

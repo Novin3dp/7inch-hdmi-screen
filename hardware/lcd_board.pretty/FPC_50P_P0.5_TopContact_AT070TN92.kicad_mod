@@ -465,13 +465,6 @@
       (xyz 1 1 1))
     (rotate
       (xyz 0 0 0)))
-  (fp_text user "pin1"
-    (at 12.3 -3.4)
-    (layer "F.SilkS")
-    (effects
-      (font
-        (size 0.8 0.8)
-        (thickness 0.12))))
   (fp_text user "FPC IN (contacts up)"
     (at 0 3)
     (layer "F.Fab")
