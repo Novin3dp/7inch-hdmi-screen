@@ -118,6 +118,9 @@ def do_import():
         return
     fanout_gnd(b)
     stitch(b)
+    import silk
+    from pcb import OX, OY, W, H
+    silk.place_labels(b, OX, OY, W, H)
     b.Save(BRD)
     print("saved", BRD)
 
