@@ -1,0 +1,9 @@
+*.dsn
+*.ses
+!lcd_dsi.ses
+gen/__pycache__/
+*-bak
+fp-info-cache
+*.kicad_prl
+fab/gerbers/
+logs/

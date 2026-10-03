@@ -11,6 +11,8 @@
 
 ![top](docs/img/pcb_top.png)
 
+> **نسخه‌ی DSI:** یک برد جداگانه (۶۸×۴۲ mm) هم هست که همین پنل و تاچ را مستقیم از پورت DSI رزبری‌پای و با پل ICN6211 راه می‌اندازد، بدون HDMI و بدون میکروکنترلر. طراحی در [`hardware_dsi/`](hardware_dsi/README.md) و Overlay و درایور لینوکس در `rpi_dsi/` است.
+
 ---
 
 ## ۱) بلوک دیاگرام
@@ -46,7 +48,9 @@ hardware/                 پروژه‌ی KiCad (نسخه 7)
   fab/                    فایل‌های ساخت: gerber.zip، BOM و CPL برای JLCPCB
   gen/                    اسکریپت‌هایی که کل طراحی را می‌سازند (منبع اصلی = design.py)
 firmware/                 فرم‌ور STM32F072 (C + TinyUSB)
-docs/                     schematic.pdf و تصاویر برد
+hardware_dsi/             نسخه‌ی DSI (ICN6211) — پروژه‌ی KiCad جدا با README خودش
+rpi_dsi/                  Device Tree Overlay و اسکریپت ساخت درایور ICN6211 برای نسخه‌ی DSI
+docs/                     schematic.pdf، schematic_dsi.pdf و تصاویر برد
 *.pdf                     دیتاشیت‌ها
 ```
 

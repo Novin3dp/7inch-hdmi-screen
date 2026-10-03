@@ -1,0 +1,128 @@
+(kicad_sch
+  (version 20230121)
+  (generator eeschema)
+  (uuid "5d1c6e2a-7b40-4f0e-8a31-6c2d9e000001")
+  (paper "A4")
+  (title_block
+    (title "AT070TN92 Raspberry Pi DSI driver board")
+    (date "2026-10-03")
+    (rev "1.0")
+    (comment 1 "ICN6211 DSI->RGB888, TPS61040 bias, TPS61165 backlight, GT915 touch on Pi I2C"))
+  (lib_symbols)
+  (sheet
+    (at 20 40)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "5d1c6e2a-7b40-4f0e-8a31-6c2d9e000101")
+    (property "Sheetname" "Pi header (5 V, GPIOs) and 3.3 V"
+      (at 20 39.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_dsi_power.kicad_sch"
+      (at 20 70.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_dsi"
+        (path "/5d1c6e2a-7b40-4f0e-8a31-6c2d9e000001"
+          (page "2")))))
+  (sheet
+    (at 150 40)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "5d1c6e2a-7b40-4f0e-8a31-6c2d9e000102")
+    (property "Sheetname" "Raspberry Pi DSI input, ICN6211 bridge"
+      (at 150 39.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_dsi_dsi.kicad_sch"
+      (at 150 70.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_dsi"
+        (path "/5d1c6e2a-7b40-4f0e-8a31-6c2d9e000001"
+          (page "3")))))
+  (sheet
+    (at 20 85)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "5d1c6e2a-7b40-4f0e-8a31-6c2d9e000103")
+    (property "Sheetname" "AT070TN92 panel, bias supplies, VCOM, backlight, touch"
+      (at 20 84.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_dsi_panel.kicad_sch"
+      (at 20 115.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_dsi"
+        (path "/5d1c6e2a-7b40-4f0e-8a31-6c2d9e000001"
+          (page "4")))))
+  (text "AT070TN92 7\" 800x480 TTL panel driver for the Raspberry Pi DSI port: ICN6211 DSI->RGB888 bridge."
+    (at 20 145 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "J1 = Pi 15-pin DSI (Pi 3/4; Pi 5 / CM via the standard 22->15 pin display cable). Pins 14/15 (3V3) unused."
+    (at 20 151 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "J2 -> Pi 40-pin header: 5 V (pins 2/4), GND, DSI_EN, TP_INT, TP_RST, BL_PWM GPIOs (see rpi_dsi/)."
+    (at 20 157 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "Touch (GT915) and ICN6211 I2C share the DSI-connector I2C bus (i2c_csi_dsi)."
+    (at 20 163 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "DSI_EN high: panel RESET released after ~1 ms, bias (AVDD/VGL/VGH) after ~50 ms (RC)."
+    (at 20 169 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "J3 pad numbers equal AT070TN92 FPC pin numbers; use a TOP-contact 0.5 mm 50-pin FPC connector."
+    (at 20 175 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (sheet_instances
+    (path "/"
+      (page "1"))))
