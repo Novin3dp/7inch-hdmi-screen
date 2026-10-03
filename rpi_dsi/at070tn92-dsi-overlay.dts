@@ -1,0 +1,175 @@
+/*
+ * Raspberry Pi device-tree overlay for the AT070TN92 DSI driver board (hardware_dsi/)
+ *
+ *   Pi DSI (2 lanes) -> ICN6211 bridge -> AT070TN92 800x480 RGB888 panel (DE mode)
+ *   GT915 touch on the DSI connector's I2C bus (i2c_csi_dsi, address 0x5d)
+ *
+ * Board connector J2 -> Pi 40-pin header (defaults, all changeable with overlay parameters):
+ *   J2.1/2  +5V      -> header pin 2 / 4
+ *   J2.3/4  GND      -> header pin 6 / 9
+ *   J2.5    DSI_EN   -> GPIO22 (pin 15)   ICN6211 EN; also releases panel RESET and the bias supplies
+ *   J2.6    TP_INT   -> GPIO27 (pin 13)
+ *   J2.7    TP_RST   -> GPIO17 (pin 11)
+ *   J2.8    BL_PWM   -> GPIO18 (pin 12)   backlight on/off (gpio-backlight)
+ *
+ * Build / install (see README.md):
+ *   dtc -@ -I dts -O dtb -o at070tn92-dsi.dtbo at070tn92-dsi-overlay.dts
+ *   sudo cp at070tn92-dsi.dtbo /boot/firmware/overlays/
+ *   config.txt:  dtoverlay=vc4-kms-v3d
+ *                dtoverlay=at070tn92-dsi            (Pi 5 DISP0 / CM DSI0: dtoverlay=at070tn92-dsi,dsi0)
+ *
+ * Needs the chipone-icn6211 kernel module (not built in Raspberry Pi OS kernels): rpi_dsi/icn6211/.
+ */
+
+/dts-v1/;
+/plugin/;
+
+/ {
+	compatible = "brcm,bcm2835";
+
+	dsi_frag: fragment@0 {
+		target = <&dsi1>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			port {
+				dsi_out: endpoint {
+					remote-endpoint = <&bridge_in>;
+				};
+			};
+
+			bridge: bridge@0 {
+				compatible = "chipone,icn6211";
+				reg = <0>;
+				enable-gpios = <&gpio 22 0>;	/* GPIO_ACTIVE_HIGH */
+
+				ports {
+					#address-cells = <1>;
+					#size-cells = <0>;
+
+					port@0 {
+						reg = <0>;
+						bridge_in: endpoint {
+							remote-endpoint = <&dsi_out>;
+							data-lanes = <1 2>;
+						};
+					};
+
+					port@1 {
+						reg = <1>;
+						bridge_out: endpoint {
+							remote-endpoint = <&panel_in>;
+						};
+					};
+				};
+			};
+		};
+	};
+
+	fragment@1 {
+		target-path = "/";
+		__overlay__ {
+			panel: at070tn92-panel {
+				compatible = "panel-dpi";
+				width-mm = <154>;
+				height-mm = <86>;
+				backlight = <&backlight>;
+
+				/* AT070TN92 spec: 33.3 MHz, Th 1056 (HFP 210, HBP+HS 46), Tv 525 (VFP 22, VBP+VS 23) */
+				timing: panel-timing {
+					clock-frequency = <33300000>;
+					hactive = <800>;
+					hfront-porch = <210>;
+					hsync-len = <20>;
+					hback-porch = <26>;
+					vactive = <480>;
+					vfront-porch = <22>;
+					vsync-len = <10>;
+					vback-porch = <13>;
+					hsync-active = <0>;
+					vsync-active = <0>;
+					de-active = <1>;
+					/* panel latches data on the falling DCLK edge: drive on the rising edge */
+					pixelclk-active = <1>;
+				};
+
+				port {
+					panel_in: endpoint {
+						remote-endpoint = <&bridge_out>;
+					};
+				};
+			};
+
+			backlight: at070tn92-backlight {
+				compatible = "gpio-backlight";
+				gpios = <&gpio 18 0>;
+				default-on;
+			};
+		};
+	};
+
+	i2c_frag: fragment@2 {
+		target = <&i2c_csi_dsi>;
+		__overlay__ {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			touch: gt915@5d {
+				compatible = "goodix,gt911";	/* GT9xx family: the driver reads the GT915 ID */
+				reg = <0x5d>;
+				pinctrl-names = "default";
+				pinctrl-0 = <&touch_pins>;
+				interrupt-parent = <&gpio>;
+				interrupts = <27 2>;		/* falling edge */
+				irq-gpios = <&gpio 27 0>;
+				reset-gpios = <&gpio 17 0>;
+			};
+		};
+	};
+
+	fragment@3 {
+		target = <&gpio>;
+		__overlay__ {
+			touch_pins: at070tn92_touch_pins {
+				brcm,pins = <27 17>;
+				brcm,function = <0 1>;		/* INT in, RST out */
+				brcm,pull = <0 0>;
+			};
+		};
+	};
+
+	fragment@4 {
+		target = <&i2c0if>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	fragment@5 {
+		target = <&i2c0mux>;
+		__overlay__ {
+			status = "okay";
+		};
+	};
+
+	__overrides__ {
+		dsi0 = <&dsi_frag>, "target:0=", <&dsi0>,
+		       <&i2c_frag>, "target:0=", <&i2c_csi_dsi0>;
+		enable_gpio = <&bridge>, "enable-gpios:4";
+		backlight_gpio = <&backlight>, "gpios:4";
+		touch_int = <&touch_pins>, "brcm,pins:0",
+			    <&touch>, "interrupts:0",
+			    <&touch>, "irq-gpios:4";
+		touch_reset = <&touch_pins>, "brcm,pins:4",
+			      <&touch>, "reset-gpios:4";
+		touch_addr = <&touch>, "reg:0";
+		disable_touch = <&touch>, "status=disabled";
+		touch_invx = <&touch>, "touchscreen-inverted-x?";
+		touch_invy = <&touch>, "touchscreen-inverted-y?";
+		touch_swapxy = <&touch>, "touchscreen-swapped-x-y?";
+		clock-frequency = <&timing>, "clock-frequency:0";
+	};
+};
