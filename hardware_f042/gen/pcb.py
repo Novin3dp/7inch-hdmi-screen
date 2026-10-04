@@ -36,6 +36,7 @@ def pt(x, y):
 # ref: (x, y, rotation_deg)   (x right, y down, board-local mm)
 CX, CY = 27.0, 17.0        # LT8619C centre
 J1Y = 14.75                # HDMI receptacle origin y (pin 12 = CK- at y 14.0)
+USB_X, USB_Y = 3.65, 29.8  # USB-C receptacle origin (left edge, under J1)
 PL = {
     # --- HDMI + LT8619C
     "J1": (3.5, J1Y, 270),
@@ -81,13 +82,13 @@ PL = {
     "C4": (47.6, 7.4, 90),
     "C6": (58.5, 4.8, 90),
     # --- USB-C + MCU
-    "J2": (W - 3.65, 24.0, 90),
-    "R1": (70.2, 19.4, 90),
-    "R2": (70.2, 28.6, 90),
-    "U4": (67.4, 24.0, 90),
-    "F1": (73.6, 13.0, 90),
-    "C1": (69.0, 9.0, 0),
-    "C2": (66.0, 9.0, 90),
+    "J2": (USB_X, USB_Y, 270),      # USB-C on the left edge, right under the HDMI receptacle
+    "R1": (9.8, 34.4, 270),
+    "R2": (9.8, 25.2, 270),
+    "U4": (38.6, 21.4, 90),        # USB ESD on the way to the MCU (no room at the connector)
+    "F1": (11.4, 26.6, 90),
+    "C1": (19.4, 27.4, 0),
+    "C2": (19.4, 25.6, 0),
     "U10": (60.0, 22.0, 0),        # STM32F042F6P6 TSSOP-20 (USB pins 17/18 face the USB-C)
     "C45": (63.6, 19.4, 90),       # VDD  pin16
     "C46": (55.8, 23.6, 90),       # VDDA pin5
@@ -115,13 +116,13 @@ PL = {
     "C27": (51.0, 38.0, 0),
     "C28": (51.0, 36.8, 0),
     # --- bias supply (bottom-left)
-    "Q1": (3.6, 30.0, 0),
-    "Q2": (3.6, 34.6, 0),
-    "R22": (6.8, 28.2, 0),
-    "R23": (6.8, 36.6, 0),
-    "C29": (7.2, 32.3, 90),
-    "U7": (10.6, 33.0, 0),
-    "L1": (10.6, 38.4, 0),
+    "Q1": (2.4, 37.8, 0),
+    "Q2": (6.4, 37.8, 0),
+    "R22": (13.6, 35.6, 0),
+    "R23": (8.4, 40.4, 0),
+    "C29": (13.4, 38.2, 90),
+    "U7": (12.6, 33.4, 0),         # moved right: the USB-C now sits left of it
+    "L1": (12.6, 38.8, 0),
     "D1": (15.4, 35.6, 90),
     "R24": (14.2, 30.0, 0),
     "R25": (14.2, 28.9, 0),
@@ -159,7 +160,7 @@ PL = {
     "R32": (57.8, 38.0, 0),
     # --- test points
     "TP1": (62.0, 2.2, 0), "TP2": (37.0, 11.0, 0), "TP3": (33.0, 2.0, 0), "TP4": (17.0, 28.8, 0),
-    "TP5": (19.2, 48.0, 0), "TP6": (2.2, 48.0, 0), "TP7": (24.45, 41.44, 0), "TP8": (2.2, 39.6, 0),
+    "TP5": (19.2, 48.0, 0), "TP6": (9.4, 48.3, 0), "TP7": (24.45, 41.44, 0), "TP8": (66.0, 14.0, 0),
 }
 
 
@@ -214,20 +215,23 @@ def preroute(board, net):
     track(board, net("+1V8A"), [(20.0, 12.4), (21.0, 13.4), (21.0, 24.5)], layer=pcbnew.B_Cu, w=0.3)
     via(board, net("+1V8A"), 21.0, 24.5)
     track(board, net("+1V8A"), [(21.0, 24.5), (21.0, 26.225)], w=0.3)
-    # USB-C: join the duplicated D+/D- contacts (both plug orientations)
-    #   D+ (B6 y23.25, A6 y24.25): behind the pads on top;  D- (A7, B7): in front, via + bottom link
-    jx, jy = W - 3.65, 24.0
+    # USB-C (left edge, under the HDMI receptacle): join the duplicated D+/D- contacts (both plug
+    # orientations) and the VBUS pins.  Geometry written in the connector's 90-degree frame (as on the
+    # F072 board, right edge) and rotated by 180 degrees about the connector for the 270-degree placement.
+    jx, jy = W - 3.65, 24.0                                   # reference frame (90 deg)
+    m = lambda x, y: (USB_X + (jx - x), USB_Y + (jy - y))
+    tr = lambda n, pts, **k: track(board, net(n), [m(x, y) for x, y in pts], **k)
+    vi = lambda n, x, y: via(board, net(n), *m(x, y))
     xr, xf = jx - 4.045 - 0.725, jx - 4.045 + 0.725         # rear / front pad ends
-    track(board, net("USB_DP"), [(xr, jy - 0.75), (xr - 0.55, jy - 0.75), (xr - 0.55, jy + 0.25), (xr, jy + 0.25)])
+    tr("USB_DP", [(xr, jy - 0.75), (xr - 0.55, jy - 0.75), (xr - 0.55, jy + 0.25), (xr, jy + 0.25)])
     for dy in (-0.25, 0.75):
-        track(board, net("USB_DM"), [(xf, jy + dy), (xf + 0.55, jy + dy)])
-        via(board, net("USB_DM"), xf + 0.55, jy + dy)
-    track(board, net("USB_DM"), [(xf + 0.55, jy - 0.25), (xf + 0.55, jy + 0.75)], layer=pcbnew.B_Cu)
-    #   VBUS (A4/B9 y26.45, A9/B4 y21.55): vias behind the pads, joined on the bottom layer
+        tr("USB_DM", [(xf, jy + dy), (xf + 0.55, jy + dy)])
+        vi("USB_DM", xf + 0.55, jy + dy)
+    tr("USB_DM", [(xf + 0.55, jy - 0.25), (xf + 0.55, jy + 0.75)], layer=pcbnew.B_Cu)
     for dy in (-2.45, 2.45):
-        track(board, net("VBUS"), [(xr, jy + dy), (xr - 0.7, jy + dy)], w=0.4)
-        via(board, net("VBUS"), xr - 0.7, jy + dy)
-    track(board, net("VBUS"), [(xr - 0.7, jy - 2.45), (xr - 0.7, jy + 2.45)], layer=pcbnew.B_Cu, w=0.4)
+        tr("VBUS", [(xr, jy + dy), (xr - 0.7, jy + dy)], w=0.4)
+        vi("VBUS", xr - 0.7, jy + dy)
+    tr("VBUS", [(xr - 0.7, jy - 2.45), (xr - 0.7, jy + 2.45)], layer=pcbnew.B_Cu, w=0.4)
     # pins 58 (VDD18) / 59 (PVCC18, PLL): nested escapes to their decaps on the right
     track(board, net("+1V8"), [(CX + 3.6, CY - 4.4), (CX + 3.6, 11.4), (33.125, 11.4)], w=0.2)
     track(board, net("+1V8A"), [(CX + 3.2, CY - 4.4), (CX + 3.2, 9.9), (33.125, 9.9)], w=0.2)
@@ -260,6 +264,8 @@ def preroute(board, net):
 
 FIXED = {"C22", "C23", "TP7", "C20", "C21", "J1", "U1", "J2", "J3", "J4", "U10", "U2", "U3", "Y1", "C11", "C12", "C13", "C14",
          "R10", "FB1", "FB2", "J5", "U7", "U9", "L1", "L2"}
+# placed after everything else (they make room for the USB-C under the HDMI receptacle)
+LATE = {"R1", "R2", "C1", "C2", "Q1", "Q2", "R22", "R23", "C29", "TP8"}
 # areas reserved for routing (no footprints): TMDS corridor and RGB bus field
 NO_PLACE = [(8.0, 11.6, 22.3, 22.0), (25.0, 26.0, 52.0, 36.0), (25.6, 21.6, 32.0, 26.0)]
 
@@ -290,7 +296,8 @@ def legalize(board):
     m = 0.2
     placed = [(a - m, b - m, c + m, d + m) for a, b, c, d in PRE]
     fps = list(board.GetFootprints())
-    order = [f for f in fps if f.GetReference() in FIXED] + [f for f in fps if f.GetReference() not in FIXED]
+    rank = lambda f: 0 if f.GetReference() in FIXED else (2 if f.GetReference() in LATE else 1)
+    order = sorted(fps, key=rank)            # fixed parts, then the rest, then the parts moved for USB-C
     for fp in order:
         ref = fp.GetReference()
         if ref in FIXED:
@@ -298,7 +305,7 @@ def legalize(board):
             continue
         x0, y0 = [pcbnew.ToMM(v) for v in (fp.GetPosition().x, fp.GetPosition().y)]
         best = None
-        for r in [i * 0.2 for i in range(0, 60)]:
+        for r in [i * 0.2 for i in range(0, 110)]:
             n = max(1, int(2 * math.pi * r / 0.2))
             for k in range(n):
                 a = 2 * math.pi * k / n
@@ -528,11 +535,17 @@ def make(prep):
             t.SetLayer(pcbnew.F_SilkS)
             t.SetTextSize(pcbnew.VECTOR2I(mm(size), mm(size)))
             t.SetTextThickness(mm(0.2))
-            t.SetPosition(pt(44.8, y))
+            t.SetPosition(pt(47.6, y))
             board.Add(t)
     if prep:
         # keep the bottom layer under the TMDS lines free of other signals
         keepout(board, pcbnew.B_Cu, [(6.0, 11.8), (22.4, 11.8), (22.4, 22.2), (6.0, 22.2)], tracks=True, vias=False)
+        # no autorouted copper closer than 0.5 mm to the board edge (both layers)
+        e = 0.5
+        for lay in (pcbnew.F_Cu, pcbnew.B_Cu):
+            for poly in ([(0, 0), (W, 0), (W, e), (0, e)], [(0, H - e), (W, H - e), (W, H), (0, H)],
+                         [(0, 0), (e, 0), (e, H), (0, H)], [(W - e, 0), (W, 0), (W, H), (W - e, H)]):
+                keepout(board, lay, poly, tracks=True, vias=True)
         for t in board.GetTracks():
             t.SetLocked(True)
     return board
