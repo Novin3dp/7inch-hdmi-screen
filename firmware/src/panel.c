@@ -46,9 +46,13 @@ static void bl_apply(void)
 
 void panel_set_orientation(bool rotate180)
 {
+#if HAS_SCAN_PINS
   /* datasheet note 4: U/D=GND, L/R=DVDD -> up->down, left->right (normal) */
   gpio_write(PIN_LCD_LR, !rotate180);
   gpio_write(PIN_LCD_UD, rotate180);
+#else
+  (void)rotate180;   /* scan direction strapped by R19/R20; "rot" then only turns the touch */
+#endif
 }
 
 void panel_power_on(void)

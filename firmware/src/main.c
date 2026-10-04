@@ -137,8 +137,12 @@ int main(void)
   settings_load();
   console_printf("\nAT070TN92 HDMI touch board\n");
 
+#ifdef BOARD_F042
+  i2c_init(I2C1, I2C_TIMING_400K_48M);   /* one bus: LT8619C and GT915 both support 400 kHz */
+#else
   i2c_init(I2C1, I2C_TIMING_100K_48M);
   i2c_init(I2C2, I2C_TIMING_400K_48M);
+#endif
 
   panel_set_orientation(settings.rotate180);
   panel_power_on();

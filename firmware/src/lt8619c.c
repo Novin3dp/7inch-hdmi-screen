@@ -14,7 +14,6 @@
 #include "edid.h"
 #include "i2c.h"
 
-#define LT_I2C  I2C1
 #define LT_ADDR 0x32        /* 7-bit (0x64/0x65) */
 
 static uint8_t cur_bank = 0xFF;

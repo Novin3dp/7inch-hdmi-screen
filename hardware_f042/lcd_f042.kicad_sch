@@ -1,0 +1,154 @@
+(kicad_sch
+  (version 20230121)
+  (generator eeschema)
+  (uuid "7e42f042-3f1c-4c1d-9a7e-2b8f1c000001")
+  (paper "A4")
+  (title_block
+    (title "AT070TN92 HDMI + USB-touch driver board (STM32F042F6P6)")
+    (date "2026-10-04")
+    (rev "1.0")
+    (comment 1 "LT8619C HDMI->RGB888, TPS61040 bias, TPS61165 backlight, STM32F042F6P6 USB touch"))
+  (lib_symbols)
+  (sheet
+    (at 20 40)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "7e42f042-3f1c-4c1d-9a7e-2b8f1c000101")
+    (property "Sheetname" "Power input (USB-C) and regulators"
+      (at 20 39.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_f042_power.kicad_sch"
+      (at 20 70.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_f042"
+        (path "/7e42f042-3f1c-4c1d-9a7e-2b8f1c000001"
+          (page "2")))))
+  (sheet
+    (at 150 40)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "7e42f042-3f1c-4c1d-9a7e-2b8f1c000102")
+    (property "Sheetname" "HDMI receiver LT8619C"
+      (at 150 39.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_f042_hdmi.kicad_sch"
+      (at 150 70.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_f042"
+        (path "/7e42f042-3f1c-4c1d-9a7e-2b8f1c000001"
+          (page "3")))))
+  (sheet
+    (at 20 85)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "7e42f042-3f1c-4c1d-9a7e-2b8f1c000103")
+    (property "Sheetname" "AT070TN92 panel, bias supplies, VCOM, backlight"
+      (at 20 84.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_f042_panel.kicad_sch"
+      (at 20 115.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_f042"
+        (path "/7e42f042-3f1c-4c1d-9a7e-2b8f1c000001"
+          (page "4")))))
+  (sheet
+    (at 150 85)
+    (size 110 30)
+    (fields_autoplaced)
+    (stroke
+      (width 0.1524)
+      (type solid))
+    (fill
+      (color 0 0 0 0))
+    (uuid "7e42f042-3f1c-4c1d-9a7e-2b8f1c000104")
+    (property "Sheetname" "STM32F042F6P6 controller and GT915 touch"
+      (at 150 84.3 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left bottom)))
+    (property "Sheetfile" "lcd_f042_mcu.kicad_sch"
+      (at 150 115.6 0)
+      (effects
+        (font
+          (size 1.27 1.27))
+        (justify left top)))
+    (instances
+      (project "lcd_f042"
+        (path "/7e42f042-3f1c-4c1d-9a7e-2b8f1c000001"
+          (page "5")))))
+  (text "AT070TN92 7\" 800x480 TTL panel driver: HDMI (LT8619C) + GT915 touch -> USB HID (STM32F042F6P6)."
+    (at 20 145 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "Power: USB-C 5 V (from Raspberry Pi USB port, ~0.7 A max with backlight at 100 %)."
+    (at 20 151 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "Panel power-up order (MCU controlled): DVDD -> RESET -> VGL/AVDD -> VGH -> data -> backlight."
+    (at 20 157 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "One I2C bus for LT8619C (0x32) and GT915 (0x5D). Panel scan direction: straps R19 (L/R) and R20 (U/D)."
+    (at 20 163 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "J3 pad numbers equal AT070TN92 FPC pin numbers; use a TOP-contact 0.5 mm 50-pin FPC connector."
+    (at 20 169 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (text "VCOM (pins 6/46) is adjustable with RV1 (2.55..4.5 V): trim for minimum flicker."
+    (at 20 175 0)
+    (effects
+      (font
+        (size 1.27 1.27))
+      (justify left)))
+  (sheet_instances
+    (path "/"
+      (page "1"))))

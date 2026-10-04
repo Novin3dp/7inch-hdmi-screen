@@ -1,5 +1,5 @@
 /*
- * Debug / setup console on USART1 (PA9 TX, PA10 RX, 115200 8N1) - header J5 pins 5/6.
+ * Debug / setup console on CONSOLE_USART (115200 8N1) - header J5 pins 5/6.
  * Type "help" for the command list.
  */
 #include <stdarg.h>
@@ -20,20 +20,20 @@ void console_init(void)
 {
   gpio_mode(PIN_UART_TX, MODE_AF, PULL_NONE, 1, false);
   gpio_mode(PIN_UART_RX, MODE_AF, PULL_UP, 1, false);
-  USART1->CR1 = 0;
-  USART1->BRR = 48000000 / 115200;
-  USART1->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+  CONSOLE_USART->CR1 = 0;
+  CONSOLE_USART->BRR = 48000000 / 115200;
+  CONSOLE_USART->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
 }
 
 static void putch(char c)
 {
   uint32_t t0 = millis();
-  while (!(USART1->ISR & USART_ISR_TXE)) {
+  while (!(CONSOLE_USART->ISR & USART_ISR_TXE)) {
     if ((uint32_t)(millis() - t0) > 5) {
       return;
     }
   }
-  USART1->TDR = (uint8_t)c;
+  CONSOLE_USART->TDR = (uint8_t)c;
 }
 
 void console_printf(const char *fmt, ...)
@@ -66,7 +66,9 @@ static void status(void)
   console_printf("panel: bias=%d backlight=%d brightness=%u%% phase=0x%02x rot180=%u swap=%u invx=%u invy=%u\n",
                  panel_is_on(), panel_backlight_is_on(), panel_get_brightness(), lt8619c_get_pclk_phase(),
                  settings.rotate180, settings.touch_swap_xy, settings.touch_invert_x, settings.touch_invert_y);
+#if HAS_HDMI5V_DET
   console_printf("HDMI +5V: %s\n", gpio_read(PIN_HDMI5V_DET) ? "present" : "absent");
+#endif
 }
 
 static const uint8_t phase_codes[] = {0x20, 0x28, 0x21, 0x29, 0x22, 0x2a, 0x23, 0x2b, 0x24, 0x2c};
@@ -109,8 +111,8 @@ static void command(char *c)
 
 void console_poll(void)
 {
-  while (USART1->ISR & USART_ISR_RXNE) {
-    char ch = (char)USART1->RDR;
+  while (CONSOLE_USART->ISR & USART_ISR_RXNE) {
+    char ch = (char)CONSOLE_USART->RDR;
     if (ch == '\r' || ch == '\n') {
       if (line_len) {
         line[line_len] = 0;
@@ -123,7 +125,7 @@ void console_poll(void)
       putch(ch);
     }
   }
-  if (USART1->ISR & USART_ISR_ORE) {
-    USART1->ICR = USART_ICR_ORECF;
+  if (CONSOLE_USART->ISR & USART_ISR_ORE) {
+    CONSOLE_USART->ICR = USART_ICR_ORECF;
   }
 }

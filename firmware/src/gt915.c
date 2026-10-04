@@ -10,7 +10,6 @@
 #include "board.h"
 #include "i2c.h"
 
-#define TP_I2C  I2C2
 #define TP_ADDR 0x5D
 
 static struct gt915_info info;

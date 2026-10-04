@@ -64,9 +64,16 @@ static void clock_init(void)
   RCC->CFGR3 &= ~RCC_CFGR3_USBSW;                      /* USB clock = HSI48 */
   RCC->CFGR3 |= RCC_CFGR3_I2C1SW;                      /* I2C1 clock = SYSCLK (48 MHz) */
 
+#ifdef BOARD_F042
+  RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN | RCC_AHBENR_GPIOFEN;
+  RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
+  RCC->APB1ENR |= RCC_APB1ENR_I2C1EN | RCC_APB1ENR_USART2EN | RCC_APB1ENR_TIM3EN | RCC_APB1ENR_USBEN;
+  SYSCFG->CFGR1 |= SYSCFG_CFGR1_PA11_PA12_RMP;          /* TSSOP-20 pins 17/18 = PA11/PA12 (USB) */
+#else
   RCC->AHBENR |= RCC_AHBENR_GPIOAEN | RCC_AHBENR_GPIOBEN;
   RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN | RCC_APB2ENR_USART1EN;
   RCC->APB1ENR |= RCC_APB1ENR_I2C1EN | RCC_APB1ENR_I2C2EN | RCC_APB1ENR_TIM3EN | RCC_APB1ENR_USBEN;
+#endif
 }
 
 void board_init(void)
@@ -81,13 +88,27 @@ void board_init(void)
   gpio_mode(PIN_LCD_RST, MODE_OUT, PULL_NONE, 0, false);
   gpio_write(PIN_LT_RSTN, 0);
   gpio_mode(PIN_LT_RSTN, MODE_OUT, PULL_NONE, 0, false);
+#if HAS_SCAN_PINS
   gpio_write(PIN_LCD_LR, 1);
   gpio_mode(PIN_LCD_LR, MODE_OUT, PULL_NONE, 0, false);
   gpio_write(PIN_LCD_UD, 0);
   gpio_mode(PIN_LCD_UD, MODE_OUT, PULL_NONE, 0, false);
+#endif
   gpio_write(PIN_LED, 0);
   gpio_mode(PIN_LED, MODE_OUT, PULL_NONE, 0, false);
+#if HAS_HDMI5V_DET
   gpio_mode(PIN_HDMI5V_DET, MODE_IN, PULL_NONE, 0, false);
+#endif
+  /* I2C pins: alternate function 1, open drain (external pull-ups) */
+#ifdef BOARD_F042
+  gpio_mode(PIN_I2C_SDA, MODE_AF, PULL_NONE, 1, true);
+  gpio_mode(PIN_I2C_SCL, MODE_AF, PULL_NONE, 1, true);
+#else
+  gpio_mode(PIN_LT_SDA, MODE_AF, PULL_NONE, 1, true);
+  gpio_mode(PIN_LT_SCL, MODE_AF, PULL_NONE, 1, true);
+  gpio_mode(PIN_TP_SDA, MODE_AF, PULL_NONE, 1, true);
+  gpio_mode(PIN_TP_SCL, MODE_AF, PULL_NONE, 1, true);
+#endif
   gpio_write(PIN_BL_PWM, 0);
   gpio_mode(PIN_BL_PWM, MODE_OUT, PULL_NONE, 0, false);
   /* PA11/PA12 stay in their reset state: the USB peripheral takes them over when enabled */

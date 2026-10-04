@@ -1,5 +1,5 @@
 /*
- * Polling I2C master for the STM32F0 I2C v2 peripheral (I2C1 = LT8619C, I2C2 = GT915).
+ * Polling I2C master for the STM32F0 I2C v2 peripheral (see LT_I2C / TP_I2C in board.h).
  * Supports transfers longer than 255 bytes (RELOAD) for the 256-byte EDID upload.
  */
 #include "i2c.h"
