@@ -1,11 +1,16 @@
 /*
- * User settings kept in the last 2 KB flash page (0x0801F800 on the 128 KB STM32F072CB).
+ * User settings kept in the last flash page: 0x0801F800 (2 KB page) on the 128 KB STM32F072CB,
+ * 0x08007C00 (1 KB page) on the 32 KB STM32F042F6.
  */
 #include <string.h>
 #include "settings.h"
 #include "stm32f0xx.h"
 
+#ifdef BOARD_F042
+#define SETTINGS_ADDR 0x08007C00u
+#else
 #define SETTINGS_ADDR 0x0801F800u
+#endif
 #define SETTINGS_MAGIC 0x4C434431u   /* "LCD1" */
 
 struct settings settings;

@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "lcd_f042")(type "KiCad")(uri "${KIPRJMOD}/lcd_f042.pretty")(options "")(descr "project footprints"))
+)
