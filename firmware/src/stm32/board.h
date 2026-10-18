@@ -53,6 +53,7 @@
 #define HAS_SCAN_PINS    1
 #define HAS_HDMI5V_DET   1
 #endif
+#define BOOT_HINT        "STM32 DFU, BOOT0"
 
 /* ---- helpers --------------------------------------------------------------------- */
 enum { MODE_IN = 0, MODE_OUT = 1, MODE_AF = 2, MODE_AN = 3 };
@@ -68,7 +69,22 @@ static inline bool gpio_read(GPIO_TypeDef *port, int pin)
   return (port->IDR >> pin) & 1u;
 }
 
+typedef I2C_TypeDef i2c_bus_t;
+
 void board_init(void);
+void board_i2c_init(void);
+void board_usb_init(void);              /* enable the USB interrupt (after tusb_init) */
+/* backlight PWM on PIN_BL_PWM: 20 kHz, duty in 1/BL_PWM_TOP+1 steps; pwm_out() hands the pin to the timer */
+#define BL_PWM_TOP 2399
+void bl_pwm_init(void);
+void bl_pwm_out(uint32_t compare);
+/* console UART */
+void uart_init(void);
+bool uart_tx_ready(void);
+void uart_tx(uint8_t c);
+int uart_rx(void);                      /* -1 when nothing received */
+/* program one settings flash page (erase + write); returns false on verify error */
+bool flash_write_page(uint32_t addr, const void *data, uint32_t len);
 uint32_t millis(void);
 void delay_ms(uint32_t ms);
 void delay_us(uint32_t us);

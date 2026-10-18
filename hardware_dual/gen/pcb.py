@@ -330,6 +330,63 @@ def legalize(board):
         placed.append(fp_box(fp))
 
 
+def tidy(board):
+    """Line passives up: neighbours with nearly equal y (or x) share one row (column), same rotation,
+    0.25 mm grid.  A move is only kept when the courtyard stays free of everything else."""
+    import statistics
+    fps = list(board.GetFootprints())
+    passive = [f for f in fps if f.GetReference() not in FIXED and f.GetReference()[0] in "RCLD"
+               and str(f.GetFPID().GetLibItemName()).startswith(("R_0", "C_0", "L_0", "LED_0"))]
+    def boxes(skip):
+        out = [(a - 0.05, b - 0.05, c + 0.05, d + 0.05) for a, b, c, d in PRE]
+        return out + [fp_box(f) for f in fps if f not in skip] + NO_PLACE
+    def free(f, others):
+        bx = fp_box(f)
+        if bx[0] < 0.3 or bx[1] < 0.3 or bx[2] > W - 0.3 or bx[3] > H - 0.3:
+            return False
+        return not any(overlap(bx, o) for o in others)
+    def pos(f):
+        p = f.GetPosition()
+        return pcbnew.ToMM(p.x) - OX, pcbnew.ToMM(p.y) - OY
+    def setpos(f, x, y):
+        f.SetPosition(pt(x, y))
+    snap = lambda v: round(v * 4) / 4
+    moved = 0
+    for axis in (1, 0):                       # rows (same y) first, then columns (same x)
+        groups, used = [], set()
+        for f in sorted(passive, key=lambda f: pos(f)[axis]):
+            if f in used:
+                continue
+            g = [f]
+            used.add(f)
+            for h in passive:
+                if h in used:
+                    continue
+                if abs(pos(h)[axis] - pos(f)[axis]) < 0.9 and \
+                        min(abs(pos(h)[1 - axis] - pos(q)[1 - axis]) for q in g) < 4.0:
+                    g.append(h)
+                    used.add(h)
+            if len(g) > 1:
+                groups.append(g)
+        for g in groups:
+            target = snap(statistics.median(pos(f)[axis] for f in g))
+            rots = [f.GetOrientationDegrees() % 180 for f in g]
+            rot = max(set(rots), key=rots.count)
+            for f in g:
+                x0, y0 = pos(f)
+                r0 = f.GetOrientationDegrees()
+                nx, ny = (snap(x0), target) if axis == 1 else (target, snap(y0))
+                if r0 % 180 != rot:
+                    f.SetOrientationDegrees(rot)
+                setpos(f, nx, ny)
+                if free(f, boxes([f])):
+                    moved += 1
+                else:
+                    f.SetOrientationDegrees(r0)
+                    setpos(f, x0, y0)
+    print("tidy: %d passives aligned" % moved)
+
+
 def load_fp(fpid):
     lib, name = fpid.split(":")
     path = os.path.join(HW, "lcd_dual.pretty") if lib == "lcd_dual" else os.path.join(KFP, lib + ".pretty")
@@ -523,6 +580,7 @@ def make(prep):
     board, net = build()
     preroute(board, net)
     legalize(board)
+    tidy(board)
     gnd = net("GND")
     full = [(0, 0), (W, 0), (W, H), (0, H)]
     if not prep:

@@ -1,7 +1,11 @@
 #ifndef TUSB_CONFIG_H
 #define TUSB_CONFIG_H
 
+#ifdef MCU_CH32X035
+#define CFG_TUSB_MCU              OPT_MCU_CH32X035
+#else
 #define CFG_TUSB_MCU              OPT_MCU_STM32F0
+#endif
 #define CFG_TUSB_OS               OPT_OS_NONE
 #define CFG_TUSB_RHPORT0_MODE     (OPT_MODE_DEVICE | OPT_MODE_FULL_SPEED)
 #define CFG_TUD_ENABLED           1

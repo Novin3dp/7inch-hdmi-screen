@@ -1,7 +1,9 @@
 /*
  * Clock (HSI48 + CRS locked to USB SOF, crystal-less), SysTick, GPIO defaults.
  */
+#include <string.h>
 #include "board.h"
+#include "tusb.h"
 
 uint32_t SystemCoreClock = 8000000;
 static volatile uint32_t ms_ticks;
@@ -112,4 +114,92 @@ void board_init(void)
   gpio_write(PIN_BL_PWM, 0);
   gpio_mode(PIN_BL_PWM, MODE_OUT, PULL_NONE, 0, false);
   /* PA11/PA12 stay in their reset state: the USB peripheral takes them over when enabled */
+}
+
+/* ---- backlight PWM: TIM3_CH1 (AF1) --------------------------------------------------- */
+void bl_pwm_init(void)
+{
+  TIM3->CR1 = 0;
+  TIM3->PSC = 0;
+  TIM3->ARR = BL_PWM_TOP;
+  TIM3->CCMR1 = (6u << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 */
+  TIM3->CCER = TIM_CCER_CC1E;
+  TIM3->CCR1 = 0;
+  TIM3->EGR = TIM_EGR_UG;
+  TIM3->CR1 = TIM_CR1_ARPE | TIM_CR1_CEN;
+}
+
+void bl_pwm_out(uint32_t compare)
+{
+  TIM3->CCR1 = compare;
+  gpio_mode(PIN_BL_PWM, MODE_AF, PULL_NONE, 1, false);
+}
+
+/* ---- console UART ------------------------------------------------------------------ */
+void uart_init(void)
+{
+  gpio_mode(PIN_UART_TX, MODE_AF, PULL_NONE, 1, false);
+  gpio_mode(PIN_UART_RX, MODE_AF, PULL_UP, 1, false);
+  CONSOLE_USART->CR1 = 0;
+  CONSOLE_USART->BRR = 48000000 / 115200;
+  CONSOLE_USART->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+}
+
+bool uart_tx_ready(void)
+{
+  return CONSOLE_USART->ISR & USART_ISR_TXE;
+}
+
+void uart_tx(uint8_t c)
+{
+  CONSOLE_USART->TDR = c;
+}
+
+int uart_rx(void)
+{
+  if (CONSOLE_USART->ISR & USART_ISR_ORE) {
+    CONSOLE_USART->ICR = USART_ICR_ORECF;
+  }
+  return (CONSOLE_USART->ISR & USART_ISR_RXNE) ? (int)(CONSOLE_USART->RDR & 0xFF) : -1;
+}
+
+/* ---- settings flash page ------------------------------------------------------------ */
+bool flash_write_page(uint32_t addr, const void *data, uint32_t len)
+{
+  __disable_irq();
+  FLASH->KEYR = FLASH_KEY1;
+  FLASH->KEYR = FLASH_KEY2;
+  while (FLASH->SR & FLASH_SR_BSY) {
+  }
+  FLASH->CR |= FLASH_CR_PER;
+  FLASH->AR = addr;
+  FLASH->CR |= FLASH_CR_STRT;
+  while (FLASH->SR & FLASH_SR_BSY) {
+  }
+  FLASH->SR = FLASH_SR_EOP;
+  FLASH->CR &= ~FLASH_CR_PER;
+  FLASH->CR |= FLASH_CR_PG;
+  const uint16_t *src = (const uint16_t *)data;
+  volatile uint16_t *dst = (volatile uint16_t *)addr;
+  for (unsigned i = 0; i < (len + 1) / 2; i++) {
+    dst[i] = src[i];
+    while (FLASH->SR & FLASH_SR_BSY) {
+    }
+  }
+  FLASH->SR = FLASH_SR_EOP;
+  FLASH->CR &= ~FLASH_CR_PG;
+  FLASH->CR |= FLASH_CR_LOCK;
+  __enable_irq();
+  return memcmp((const void *)addr, data, len) == 0;
+}
+
+/* ---- USB ----------------------------------------------------------------------------- */
+void USB_IRQHandler(void)
+{
+  tud_int_handler(0);
+}
+
+void board_usb_init(void)
+{
+  NVIC_EnableIRQ(USB_IRQn);
 }

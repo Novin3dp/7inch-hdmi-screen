@@ -132,6 +132,8 @@ make                   # نیاز به arm-none-eabi-gcc ؛ خروجی build/lcd
 make flash-dfu         # دکمه‌ی BOOT را نگه دارید و USB را وصل کنید (dfu-util لازم است)
 ```
 
+برای برد دو-میکرو با CH32X035C8T6: `./fetch_deps.sh ch32 && make BOARD=ch32` (جزئیات در `hardware_dual/README.md`). برای برد F042: `make BOARD=f042`.
+
 کارهایی که فرم‌ور انجام می‌دهد:
 * ترتیب روشن شدن پنل و کنترل بک‌لایت
 * راه‌اندازی LT8619C: ریست، خواندن Chip ID (0x16 0x04)، بارگذاری EDID (800×480@60Hz، 33.26MHz)، HPD، پیکربندی گیرنده و خروجی RGB888 SDR، تبدیل رنگ YCbCr→RGB، کپی تایمینگ ورودی به خروجی

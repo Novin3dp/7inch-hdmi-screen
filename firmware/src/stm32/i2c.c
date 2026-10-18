@@ -7,14 +7,14 @@
 
 #define I2C_TIMEOUT_MS 20
 
-void i2c_init(I2C_TypeDef *i2c, uint32_t timingr)
+void i2c_init(i2c_bus_t *i2c, uint32_t timingr)
 {
   i2c->CR1 = 0;
   i2c->TIMINGR = timingr;
   i2c->CR1 = I2C_CR1_PE;
 }
 
-static void i2c_recover(I2C_TypeDef *i2c)
+static void i2c_recover(i2c_bus_t *i2c)
 {
   uint32_t t = i2c->TIMINGR;
   i2c->CR1 = 0;          /* PE=0 resets the state machine and flags */
@@ -23,7 +23,7 @@ static void i2c_recover(I2C_TypeDef *i2c)
   i2c->CR1 = I2C_CR1_PE;
 }
 
-static bool wait_flag(I2C_TypeDef *i2c, uint32_t flag)
+static bool wait_flag(i2c_bus_t *i2c, uint32_t flag)
 {
   uint32_t t0 = millis();
   while (!(i2c->ISR & flag)) {
@@ -50,7 +50,7 @@ static uint32_t cr2_chunk(uint32_t left, bool last_phase)
 }
 
 /* write (hdr[hlen] + data[dlen]) and then optionally read rlen bytes with a repeated start */
-bool i2c_xfer(I2C_TypeDef *i2c, uint8_t addr7, const uint8_t *hdr, uint32_t hlen,
+bool i2c_xfer(i2c_bus_t *i2c, uint8_t addr7, const uint8_t *hdr, uint32_t hlen,
               const uint8_t *data, uint32_t dlen, uint8_t *rbuf, uint32_t rlen)
 {
   uint32_t total = hlen + dlen;
@@ -116,7 +116,21 @@ bool i2c_xfer(I2C_TypeDef *i2c, uint8_t addr7, const uint8_t *hdr, uint32_t hlen
   return ok;
 }
 
-bool i2c_probe(I2C_TypeDef *i2c, uint8_t addr7)
+/* TIMINGR values for a 48 MHz kernel clock (RM0091 table 83) */
+#define I2C_TIMING_100K_48M 0xB0420F13u
+#define I2C_TIMING_400K_48M 0x50330309u
+
+void board_i2c_init(void)
+{
+#ifdef BOARD_F042
+  i2c_init(I2C1, I2C_TIMING_400K_48M);   /* one bus: LT8619C and GT915 both support 400 kHz */
+#else
+  i2c_init(I2C1, I2C_TIMING_100K_48M);
+  i2c_init(I2C2, I2C_TIMING_400K_48M);
+#endif
+}
+
+bool i2c_probe(i2c_bus_t *i2c, uint8_t addr7)
 {
   uint8_t dummy;
   return i2c_xfer(i2c, addr7, 0, 0, 0, 0, &dummy, 1);
