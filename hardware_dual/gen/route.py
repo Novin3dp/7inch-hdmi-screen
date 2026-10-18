@@ -41,10 +41,10 @@ def fix_classes(b):
     def cls(name, nets, w, cl, via):
         return ('    (class %s "" %s\n      (circuit (use_via %s))\n      (rule (width %d) (clearance %.1f))\n    )\n'
                 % (name, " ".join(q(n) for n in nets), via, w, cl))
-    block = (cls("kicad_default", sig, 150, 150.1, "Via[0-1]_600:400_um") +
-             cls("PWR", PWR, 250, 150.1, "Via[0-1]_600:400_um") +
-             cls("PWR_HI", PWR_HI, 500, 200.1, "Via[0-1]_600:400_um") +
-             cls("GNDC", GND_CLS, 250, 150.1, "Via[0-1]_600:400_um") + "  )\n")
+    block = (cls("kicad_default", sig, 150, 150.1, "Via[0-1]_700:400_um") +
+             cls("PWR", PWR, 250, 150.1, "Via[0-1]_700:400_um") +
+             cls("PWR_HI", PWR_HI, 500, 200.1, "Via[0-1]_700:400_um") +
+             cls("GNDC", GND_CLS, 250, 150.1, "Via[0-1]_700:400_um") + "  )\n")
     txt = txt[:a] + block + txt[e:]
     # KiCad 7 drops fixed vias of some nets from the DSN: add every board via explicitly
     have = set(re.findall(r'\(via "[^"]+"\s+(-?[\d.]+) (-?[\d.]+)', txt))
@@ -58,7 +58,7 @@ def fix_classes(b):
             continue
         n = t.GetNetname()
         n = '"%s"' % n if any(c in n for c in "+-()") else n
-        extra += '    (via "Via[0-1]_600:400_um"  %g %g (net %s)(type fix))\n' % (x, y, n)
+        extra += '    (via "Via[0-1]_700:400_um"  %g %g (net %s)(type fix))\n' % (x, y, n)
     i = txt.index("  (wiring") + len("  (wiring\n")
     txt = txt[:i] + extra + txt[i:]
     open(DSN, "w").write(txt)
