@@ -1,5 +1,5 @@
 /*
- * AT070TN92 HDMI + USB touch driver board firmware (STM32F072CBT6)
+ * AT070TN92 HDMI + USB touch driver board firmware (STM32F072CBT6 / STM32F042F6P6 / CH32X035C8T6)
  *
  *  - powers the panel in the order required by the AT070TN92 datasheet
  *  - configures the LT8619C HDMI receiver (EDID 800x480@60, RGB888, DE mode)
@@ -17,11 +17,6 @@
 #include "settings.h"
 #include "tusb.h"
 #include "usb_touch.h"
-
-void USB_IRQHandler(void)
-{
-  tud_int_handler(0);
-}
 
 static struct touch_report report;
 static bool touch_dirty;
@@ -137,12 +132,7 @@ int main(void)
   settings_load();
   console_printf("\nAT070TN92 HDMI touch board\n");
 
-#ifdef BOARD_F042
-  i2c_init(I2C1, I2C_TIMING_400K_48M);   /* one bus: LT8619C and GT915 both support 400 kHz */
-#else
-  i2c_init(I2C1, I2C_TIMING_100K_48M);
-  i2c_init(I2C2, I2C_TIMING_400K_48M);
-#endif
+  board_i2c_init();
 
   panel_set_orientation(settings.rotate180);
   panel_power_on();
@@ -156,7 +146,7 @@ int main(void)
   }
 
   tusb_init();
-  NVIC_EnableIRQ(USB_IRQn);
+  board_usb_init();
 
   for (;;) {
     tud_task();

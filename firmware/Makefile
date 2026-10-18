@@ -1,8 +1,12 @@
 # Firmware for the AT070TN92 HDMI + USB touch board
 #   ./fetch_deps.sh && make              -> build/lcd_touch.bin / .hex          (STM32F072CBT6 board, hardware/)
 #   make BOARD=f042                      -> build_f042/lcd_touch_f042.bin / .hex (STM32F042F6P6 board, hardware_f042/)
+#   make BOARD=ch32                      -> build_ch32/lcd_touch_ch32.bin       (CH32X035C8T6, hardware_dual/, see ch32.mk)
 #   make [BOARD=f042] flash-dfu          (hold BOOT while plugging USB, needs dfu-util)
 BOARD   ?= f072
+ifeq ($(BOARD),ch32)
+include ch32.mk
+else
 ifeq ($(BOARD),f042)
 PROJECT  = lcd_touch_f042
 BUILD    = build_f042
@@ -23,19 +27,19 @@ SIZE     = $(CROSS)size
 LIB      = lib
 TUSB     = $(LIB)/tinyusb/src
 
-SRC  = $(wildcard src/*.c)
+SRC  = $(wildcard src/*.c) $(wildcard src/stm32/*.c)
 SRC += $(TUSB)/tusb.c $(TUSB)/common/tusb_fifo.c $(TUSB)/device/usbd.c $(TUSB)/device/usbd_control.c \
        $(TUSB)/class/hid/hid_device.c $(TUSB)/portable/st/stm32_fsdev/dcd_stm32_fsdev.c
 ASM  = $(LIB)/cmsis_device_f0/Source/Templates/gcc/$(STARTUP)
 
 CFLAGS  = -mcpu=cortex-m0 -mthumb -Os -g3 -std=gnu11 -Wall -Wextra -Wno-unused-parameter \
           -ffunction-sections -fdata-sections $(MCUDEF) \
-          -Isrc -I$(TUSB) -I$(LIB)/cmsis_device_f0/Include -I$(LIB)/cmsis_core
+          -Isrc/stm32 -Isrc -I$(TUSB) -I$(LIB)/cmsis_device_f0/Include -I$(LIB)/cmsis_core
 LDFLAGS = -mcpu=cortex-m0 -mthumb -T$(LDSCRIPT) -Wl,--gc-sections -Wl,-Map=$(BUILD)/$(PROJECT).map \
           --specs=nano.specs --specs=nosys.specs
 
 OBJ = $(addprefix $(BUILD)/,$(notdir $(SRC:.c=.o))) $(BUILD)/startup.o
-vpath %.c src $(TUSB) $(TUSB)/common $(TUSB)/device $(TUSB)/class/hid $(TUSB)/portable/st/stm32_fsdev
+vpath %.c src src/stm32 $(TUSB) $(TUSB)/common $(TUSB)/device $(TUSB)/class/hid $(TUSB)/portable/st/stm32_fsdev
 
 all: $(BUILD)/$(PROJECT).bin $(BUILD)/$(PROJECT).hex
 
@@ -65,3 +69,4 @@ flash-stlink: $(BUILD)/$(PROJECT).bin
 clean:
 	rm -rf $(BUILD)
 .PHONY: all clean flash-dfu flash-stlink
+endif

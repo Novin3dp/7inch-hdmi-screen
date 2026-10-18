@@ -1,5 +1,5 @@
 /*
- * Debug / setup console on CONSOLE_USART (115200 8N1) - header J5 pins 5/6.
+ * Debug / setup console on the board UART (115200 8N1) - header J5 pins 5/6.
  * Type "help" for the command list.
  */
 #include <stdarg.h>
@@ -18,22 +18,18 @@ static unsigned line_len;
 
 void console_init(void)
 {
-  gpio_mode(PIN_UART_TX, MODE_AF, PULL_NONE, 1, false);
-  gpio_mode(PIN_UART_RX, MODE_AF, PULL_UP, 1, false);
-  CONSOLE_USART->CR1 = 0;
-  CONSOLE_USART->BRR = 48000000 / 115200;
-  CONSOLE_USART->CR1 = USART_CR1_TE | USART_CR1_RE | USART_CR1_UE;
+  uart_init();
 }
 
 static void putch(char c)
 {
   uint32_t t0 = millis();
-  while (!(CONSOLE_USART->ISR & USART_ISR_TXE)) {
+  while (!uart_tx_ready()) {
     if ((uint32_t)(millis() - t0) > 5) {
       return;
     }
   }
-  CONSOLE_USART->TDR = (uint8_t)c;
+  uart_tx((uint8_t)c);
 }
 
 void console_printf(const char *fmt, ...)
@@ -102,7 +98,7 @@ static void command(char *c)
   } else if (!strcmp(c, "defaults")) {
     settings_defaults();
   } else if (!strcmp(c, "dfu")) {
-    console_printf("use the BOOT button: hold BOOT, plug USB -> STM32 DFU bootloader\n");
+    console_printf("hold the BOOT button while plugging USB -> USB bootloader (" BOOT_HINT ")\n");
   } else {
     console_printf("commands: status | bl <0..100> | phase <0..9> | rot <0|1> | swap | invx | invy | "
                    "save | defaults\n");
@@ -111,8 +107,9 @@ static void command(char *c)
 
 void console_poll(void)
 {
-  while (CONSOLE_USART->ISR & USART_ISR_RXNE) {
-    char ch = (char)CONSOLE_USART->RDR;
+  int r;
+  while ((r = uart_rx()) >= 0) {
+    char ch = (char)r;
     if (ch == '\r' || ch == '\n') {
       if (line_len) {
         line[line_len] = 0;
@@ -124,8 +121,5 @@ void console_poll(void)
       line[line_len++] = ch;
       putch(ch);
     }
-  }
-  if (CONSOLE_USART->ISR & USART_ISR_ORE) {
-    CONSOLE_USART->ICR = USART_ICR_ORECF;
   }
 }

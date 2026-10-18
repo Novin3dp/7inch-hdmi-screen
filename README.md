@@ -13,6 +13,8 @@
 
 > **نسخه‌ی DSI:** یک برد جداگانه (۶۸×۴۲ mm) هم هست که همین پنل و تاچ را مستقیم از پورت DSI رزبری‌پای و با پل ICN6211 راه می‌اندازد، بدون HDMI و بدون میکروکنترلر. طراحی در [`hardware_dsi/`](hardware_dsi/README.md) و Overlay و درایور لینوکس در `rpi_dsi/` است.
 >
+> **نسخه‌ی دو-میکرو:** همین برد HDMI با یک جای نصب LQFP-48 که هم STM32F072 و هم CH32X035C8T6 رویش می‌نشیند: [`hardware_dual/`](hardware_dual/README.md).
+>
 > **نسخه‌ی STM32F042F6P6:** همین برد HDMI با میکروی کوچک‌تر TSSOP-20 در [`hardware_f042/`](hardware_f042/README.md). فرم‌ور با `make BOARD=f042` ساخته می‌شود.
 
 ---
@@ -50,6 +52,7 @@ hardware/                 پروژه‌ی KiCad (نسخه 7)
   fab/                    فایل‌های ساخت: gerber.zip، BOM و CPL برای JLCPCB
   gen/                    اسکریپت‌هایی که کل طراحی را می‌سازند (منبع اصلی = design.py)
 firmware/                 فرم‌ور STM32F072 (C + TinyUSB)
+hardware_dual/            همین برد HDMI با جای نصب مشترک STM32F072 / CH32X035C8T6
 hardware_f042/            همین برد HDMI با STM32F042F6P6 — پروژه‌ی KiCad جدا با README خودش
 hardware_dsi/             نسخه‌ی DSI (ICN6211) — پروژه‌ی KiCad جدا با README خودش
 rpi_dsi/                  Device Tree Overlay و اسکریپت ساخت درایور ICN6211 برای نسخه‌ی DSI
@@ -128,6 +131,8 @@ cd firmware
 make                   # نیاز به arm-none-eabi-gcc ؛ خروجی build/lcd_touch.bin
 make flash-dfu         # دکمه‌ی BOOT را نگه دارید و USB را وصل کنید (dfu-util لازم است)
 ```
+
+برای برد دو-میکرو با CH32X035C8T6: `./fetch_deps.sh ch32 && make BOARD=ch32` (جزئیات در `hardware_dual/README.md`). برای برد F042: `make BOARD=f042`.
 
 کارهایی که فرم‌ور انجام می‌دهد:
 * ترتیب روشن شدن پنل و کنترل بک‌لایت

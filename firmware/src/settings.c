@@ -1,12 +1,14 @@
 /*
  * User settings kept in the last flash page: 0x0801F800 (2 KB page) on the 128 KB STM32F072CB,
- * 0x08007C00 (1 KB page) on the 32 KB STM32F042F6.
+ * 0x08007C00 (1 KB page) on the 32 KB STM32F042F6, 0x0800F700 (256-byte page) on the CH32X035.
  */
 #include <string.h>
 #include "settings.h"
-#include "stm32f0xx.h"
+#include "board.h"
 
-#ifdef BOARD_F042
+#if defined(MCU_CH32X035)
+#define SETTINGS_ADDR 0x0800F700u   /* last 256-byte page of the 62 KB CH32X035 */
+#elif defined(BOARD_F042)
 #define SETTINGS_ADDR 0x08007C00u
 #else
 #define SETTINGS_ADDR 0x0801F800u
@@ -51,29 +53,5 @@ bool settings_save(void)
 {
   settings.magic = SETTINGS_MAGIC;
   settings.sum = checksum(&settings);
-  __disable_irq();
-  FLASH->KEYR = FLASH_KEY1;
-  FLASH->KEYR = FLASH_KEY2;
-  while (FLASH->SR & FLASH_SR_BSY) {
-  }
-  FLASH->CR |= FLASH_CR_PER;
-  FLASH->AR = SETTINGS_ADDR;
-  FLASH->CR |= FLASH_CR_STRT;
-  while (FLASH->SR & FLASH_SR_BSY) {
-  }
-  FLASH->SR = FLASH_SR_EOP;
-  FLASH->CR &= ~FLASH_CR_PER;
-  FLASH->CR |= FLASH_CR_PG;
-  const uint16_t *src = (const uint16_t *)&settings;
-  volatile uint16_t *dst = (volatile uint16_t *)SETTINGS_ADDR;
-  for (unsigned i = 0; i < (sizeof(settings) + 1) / 2; i++) {
-    dst[i] = src[i];
-    while (FLASH->SR & FLASH_SR_BSY) {
-    }
-  }
-  FLASH->SR = FLASH_SR_EOP;
-  FLASH->CR &= ~FLASH_CR_PG;
-  FLASH->CR |= FLASH_CR_LOCK;
-  __enable_irq();
-  return memcmp((const void *)SETTINGS_ADDR, &settings, sizeof(settings)) == 0;
+  return flash_write_page(SETTINGS_ADDR, &settings, sizeof(settings));
 }

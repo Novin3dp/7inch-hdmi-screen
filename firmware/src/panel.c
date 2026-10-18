@@ -14,18 +14,10 @@
 static uint8_t bl_percent = 80;
 static bool bl_on, bias_on;
 
-#define PWM_TOP 2399   /* 48 MHz / 2400 = 20 kHz PWM for the TPS61165 CTRL pin */
-
+/* 48 MHz / (BL_PWM_TOP + 1) = 20 kHz PWM for the TPS61165 CTRL pin (timer set up in board.c) */
 static void pwm_init(void)
 {
-  TIM3->CR1 = 0;
-  TIM3->PSC = 0;
-  TIM3->ARR = PWM_TOP;
-  TIM3->CCMR1 = (6u << TIM_CCMR1_OC1M_Pos) | TIM_CCMR1_OC1PE;   /* PWM mode 1 */
-  TIM3->CCER = TIM_CCER_CC1E;
-  TIM3->CCR1 = 0;
-  TIM3->EGR = TIM_EGR_UG;
-  TIM3->CR1 = TIM_CR1_ARPE | TIM_CR1_CEN;
+  bl_pwm_init();
 }
 
 static void bl_apply(void)
@@ -40,8 +32,7 @@ static void bl_apply(void)
     gpio_mode(PIN_BL_PWM, MODE_OUT, PULL_NONE, 0, false);
     return;
   }
-  TIM3->CCR1 = (uint32_t)(PWM_TOP + 1) * bl_percent / 100u;
-  gpio_mode(PIN_BL_PWM, MODE_AF, PULL_NONE, 1, false);
+  bl_pwm_out((uint32_t)(BL_PWM_TOP + 1) * bl_percent / 100u);
 }
 
 void panel_set_orientation(bool rotate180)
