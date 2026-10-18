@@ -21,7 +21,7 @@ OX, OY = 100.0, 80.0       # board origin on the KiCad page
 # design rules (JLCPCB 2-layer standard capability with margin)
 TRACK = 0.15
 CLEAR = 0.15
-VIA_D, VIA_DRILL = 0.6, 0.3
+VIA_D, VIA_DRILL = 0.6, 0.4
 
 
 def mm(x):
@@ -532,8 +532,8 @@ def build():
     pwr = pcbnew.NETCLASS("Power")
     pwr.SetClearance(mm(0.2))
     pwr.SetTrackWidth(mm(0.4))
-    pwr.SetViaDiameter(mm(0.8))
-    pwr.SetViaDrill(mm(0.4))
+    pwr.SetViaDiameter(mm(VIA_D))
+    pwr.SetViaDrill(mm(VIA_DRILL))
     ds.m_NetSettings.m_NetClasses["Power"] = pwr
 
     nets = {}

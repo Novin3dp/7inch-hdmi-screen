@@ -41,10 +41,10 @@ def fix_classes(b):
     def cls(name, nets, w, cl, via):
         return ('    (class %s "" %s\n      (circuit (use_via %s))\n      (rule (width %d) (clearance %.1f))\n    )\n'
                 % (name, " ".join(q(n) for n in nets), via, w, cl))
-    block = (cls("kicad_default", sig, 150, 150.1, "Via[0-1]_600:300_um") +
-             cls("PWR", PWR, 250, 150.1, "Via[0-1]_600:300_um") +
-             cls("PWR_HI", PWR_HI, 500, 200.1, "Via[0-1]_800:400_um") +
-             cls("GNDC", GND_CLS, 250, 150.1, "Via[0-1]_600:300_um") + "  )\n")
+    block = (cls("kicad_default", sig, 150, 150.1, "Via[0-1]_600:400_um") +
+             cls("PWR", PWR, 250, 150.1, "Via[0-1]_600:400_um") +
+             cls("PWR_HI", PWR_HI, 500, 200.1, "Via[0-1]_600:400_um") +
+             cls("GNDC", GND_CLS, 250, 150.1, "Via[0-1]_600:400_um") + "  )\n")
     txt = txt[:a] + block + txt[e:]
     # KiCad 7 drops fixed vias of some nets from the DSN: add every board via explicitly
     have = set(re.findall(r'\(via "[^"]+"\s+(-?[\d.]+) (-?[\d.]+)', txt))
@@ -58,7 +58,7 @@ def fix_classes(b):
             continue
         n = t.GetNetname()
         n = '"%s"' % n if any(c in n for c in "+-()") else n
-        extra += '    (via "Via[0-1]_600:300_um"  %g %g (net %s)(type fix))\n' % (x, y, n)
+        extra += '    (via "Via[0-1]_600:400_um"  %g %g (net %s)(type fix))\n' % (x, y, n)
     i = txt.index("  (wiring") + len("  (wiring\n")
     txt = txt[:i] + extra + txt[i:]
     open(DSN, "w").write(txt)
@@ -68,6 +68,7 @@ def do_import():
     """Read the Freerouting .ses directly (KiCad 7's python ImportSpecctraSES needs the GUI board)."""
     from sexpr import parse, find, find1
     import pcb
+    from pcb import VIA_D, VIA_DRILL
     stage2 = "--stage2" in sys.argv
     b = pcb.make(prep=stage2)
     ses_paths = [a for a in sys.argv[2:] if a.endswith(".ses")] or [SES]
@@ -101,6 +102,8 @@ def do_import():
         for v in find(n, "via"):
             name = str(v[1])
             d, drill = [int(x) for x in name.split("_")[-2].split(":")]
+            # every via is VIA_D / VIA_DRILL (0.6 / 0.4 mm); the routing was done with <= these pads
+            d, drill = int(VIA_D * 1000), int(VIA_DRILL * 1000)
             vi = pcbnew.PCB_VIA(b)
             vi.SetPosition(pcbnew.VECTOR2I(int(float(v[2]) * k), int(-float(v[3]) * k)))
             vi.SetWidth(pcbnew.FromMM(d / 1000.0))
