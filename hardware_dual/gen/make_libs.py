@@ -200,9 +200,36 @@ def lt8619c_symbol():
     return sym
 
 
+def tps61169_symbol():
+    """TI TPS61169DCKR, SC70-5 (datasheet SLVSCN6: 1 SW, 2 GND, 3 FB, 4 CTRL, 5 VIN)."""
+    W, top = 10.16, 5.08
+    body = [Sym("symbol"), "TPS61169_0_1",
+            [Sym("rectangle"), [Sym("start"), -W / 2, top], [Sym("end"), W / 2, -top],
+             [Sym("stroke"), [Sym("width"), 0.254], [Sym("type"), Sym("default")]],
+             [Sym("fill"), [Sym("type"), Sym("background")]]]]
+    pins = [Sym("symbol"), "TPS61169_1_1",
+            pin(5, "VIN", "power_in", -W / 2 - 2.54, 2.54, 0),
+            pin(4, "CTRL", "input", -W / 2 - 2.54, -2.54, 0),
+            pin(1, "SW", "power_out", W / 2 + 2.54, 2.54, 180),
+            pin(3, "FB", "input", W / 2 + 2.54, -2.54, 180),
+            pin(2, "GND", "power_in", 0, -top - 2.54, 90)]
+
+    def prop(k, v, y, hide=False):
+        e = [Sym("effects"), [Sym("font"), [Sym("size"), 1.27, 1.27]]]
+        if hide:
+            e.append(Sym("hide"))
+        return [Sym("property"), k, v, [Sym("at"), 0, y, 0], e]
+    return [Sym("symbol"), "TPS61169", [Sym("in_bom"), Sym("yes")], [Sym("on_board"), Sym("yes")],
+            prop("Reference", "U", top + 2.54), prop("Value", "TPS61169", top + 1.27),
+            prop("Footprint", "Package_TO_SOT_SMD:SOT-353_SC-70-5", 0, True),
+            prop("Datasheet", "TI SLVSCN6 TPS61169", 0, True),
+            prop("ki_description", "TI white-LED boost driver, 40 V / 1.2 A switch, 204 mV FB, SC70-5", 0, True),
+            body, pins]
+
+
 def write_symbols():
     lib = [Sym("kicad_symbol_lib"), [Sym("version"), 20220914], [Sym("generator"), Sym("kicad_symbol_editor")],
-           lt8619c_symbol()]
+           lt8619c_symbol(), tps61169_symbol()]
     with open(SYMFILE, "w") as f:
         f.write(dump(lib) + "\n")
 

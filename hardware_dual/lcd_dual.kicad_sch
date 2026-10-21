@@ -7,7 +7,7 @@
     (title "AT070TN92 HDMI + USB-touch driver board")
     (date "2026-10-02")
     (rev "1.0")
-    (comment 1 "LT8619C HDMI->RGB888, TPS61040 bias, TPS61165 backlight, STM32F072 USB touch"))
+    (comment 1 "LT8619C HDMI->RGB888, TPS61040 bias, TPS61169 backlight, STM32F072 / CH32X035 USB touch"))
   (lib_symbols)
   (sheet
     (at 20 40)

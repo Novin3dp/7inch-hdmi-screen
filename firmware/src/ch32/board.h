@@ -14,7 +14,7 @@
 
 /* ---- GPIO map (LQFP-48 pin in brackets) ------------------------------------------------ */
 #define PIN_HDMI5V_DET   GPIOA, 0    /* [10] HDMI +5V divided 22k/33k                        */
-#define PIN_BL_PWM       GPIOA, 6    /* [16] TIM3_CH1 -> TPS61165 CTRL                       */
+#define PIN_BL_PWM       GPIOA, 6    /* [16] TIM3_CH1 -> TPS61169 CTRL                       */
 #define PIN_LCD_RST      GPIOC, 6    /* [18] panel RESET (10k pull-down)                     */
 #define PIN_LCD_LR       GPIOC, 7    /* [19] panel L/R scan direction                        */
 #define PIN_LCD_UD       GPIOB, 0    /* [20] panel U/D scan direction                        */

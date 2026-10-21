@@ -189,7 +189,7 @@ def build_root():
             [Sym("uuid"), ROOT_UUID], [Sym("paper"), "A4"],
             [Sym("title_block"), [Sym("title"), "AT070TN92 HDMI + USB-touch driver board"],
              [Sym("date"), "2026-10-02"], [Sym("rev"), "1.0"],
-             [Sym("comment"), 1, "LT8619C HDMI->RGB888, TPS61040 bias, TPS61165 backlight, STM32F072 USB touch"]],
+             [Sym("comment"), 1, "LT8619C HDMI->RGB888, TPS61040 bias, TPS61169 backlight, STM32F072 / CH32X035 USB touch"]],
             [Sym("lib_symbols")]]
     uuids = {}
     for i, (name, title) in enumerate(SHEETS):

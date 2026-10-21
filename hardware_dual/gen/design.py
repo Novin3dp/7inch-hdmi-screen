@@ -8,7 +8,7 @@ Board function
   * HDMI in  -> LT8619C (HDMI RX -> 24-bit TTL RGB, DE mode) -> AT070TN92 50-pin FPC
   * Panel bias: TPS61040 boost (AVDD 10.4 V) + charge pumps (VGH +16 V, VGL -6.8 V)
                 + LM321 VCOM buffer with trimmer (2.55 .. 4.5 V)
-  * Backlight: TPS61165 constant-current boost, 182 mA, PWM dimming from the MCU
+  * Backlight: TPS61169DCKR constant-current boost, 180 mA, PWM dimming (20 kHz) from the MCU
   * STM32F072CBT6: configures LT8619C over I2C, reads GT915 touch over I2C and
     presents a USB HID multi-touch digitizer to the Raspberry Pi (USB-C, also powers board)
 """
@@ -240,18 +240,17 @@ P("U8", "Amplifier_Operational", "LM321", "LM321", F_SOT235,
 R("R30", "33R", "VCOM_BUF", "VCOM", S, lcsc="C25105")
 C("C40", "1uF", "VCOM", "GND", S, lcsc=L_1U)
 C("C41", "100nF", "AVDD", "GND", S, lcsc=L_100N)
-# --- LED backlight: 9.3 V / 180 mA string, TPS61165 constant current
-P("U9", "Driver_LED", "TPS61165DBV", "TPS61165", F_SOT236,
-  {1: "+5V", 2: "BL_PWM", 3: "BL_SW", 4: "GND", 5: "BL_COMP", 6: "VLED_K"}, S,
-  mpn="TPS61165DBVR", lcsc="C125979")
+# --- LED backlight: 9.3 V / 180 mA string, TPS61169 constant current (internal compensation)
+P("U9", "lcd_dual", "TPS61169", "TPS61169DCKR", "Package_TO_SOT_SMD:SOT-353_SC-70-5",
+  {1: "BL_SW", 2: "GND", 3: "VLED_K", 4: "BL_PWM", 5: "+5V"}, S,
+  mpn="TPS61169DCKR", desc="40 V / 1.2 A WLED boost, FB 204 mV, PWM 5..100 kHz on CTRL")
 P("L2", "Device", "L", "10uH 1.2A", "Inductor_SMD:L_Taiyo-Yuden_NR-40xx",
   {1: "+5V", 2: "BL_SW"}, S, mpn="NR4018T100M")
 P("D6", "Device", "D_Schottky", "MBR0560", F_SOD123, {1: "VLED_A", 2: "BL_SW"}, S,
   mpn="MBR0560T1G", lcsc="C22452")
 C("C42", "2.2uF 50V", "VLED_A", "GND", S, fp=F_C1206, lcsc="C13832")
 C("C43", "10uF", "+5V", "GND", S, fp=F_C0603, lcsc=L_10U0603)
-C("C44", "220nF", "BL_COMP", "GND", S, lcsc="C16772")
-R("R31", "1.1R 1%", "VLED_K", "GND", S, fp=F_R0805, lcsc="C17520")
+R("R31", "1.13R 1%", "VLED_K", "GND", S, fp=F_R0805)   # 204 mV / 1.13 R = 180 mA
 R("R32", "100k", "BL_PWM", "GND", S, lcsc=L_100K)
 
 # =====================================================================
