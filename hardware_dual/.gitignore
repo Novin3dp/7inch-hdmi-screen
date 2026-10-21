@@ -7,3 +7,4 @@ fp-info-cache
 *.kicad_prl
 fab/gerbers/
 logs/
+!lcd_dual_stage2.ses

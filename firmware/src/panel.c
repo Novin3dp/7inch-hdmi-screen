@@ -74,7 +74,7 @@ void panel_power_off(void)
 void panel_backlight(bool on)
 {
   if (on && !bl_on) {
-    /* TPS61165: CTRL held high first selects PWM mode (not EasyScale) */
+    /* TPS61165: CTRL held high first selects PWM mode (not EasyScale); harmless for the TPS61169 */
     gpio_write(PIN_BL_PWM, 1);
     gpio_mode(PIN_BL_PWM, MODE_OUT, PULL_NONE, 0, false);
     delay_ms(2);

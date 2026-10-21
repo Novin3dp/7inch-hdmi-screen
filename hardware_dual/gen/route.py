@@ -119,6 +119,7 @@ def do_import():
         fix_classes(b)
         print("stage-2 DSN written", ok)
         return
+    prune_dangling(b)
     fanout_gnd(b)
     stitch(b)
     import silk
@@ -126,6 +127,53 @@ def do_import():
     silk.place_labels(b, OX, OY, W, H)
     b.Save(BRD)
     print("saved", BRD)
+
+
+def prune_dangling(b):
+    """Delete track segments with a free end (unused escape stubs the router bypassed)."""
+    removed = 0
+    while True:
+        tracks = [t for t in b.GetTracks() if t.GetClass() != "PCB_VIA"]
+        vias = [t for t in b.GetTracks() if t.GetClass() == "PCB_VIA"]
+        pads = [p for fp in b.GetFootprints() for p in fp.Pads()]
+        dead = []
+        for t in tracks:
+            nc = t.GetNetCode()
+            same = [o for o in tracks if o is not t and o.GetNetCode() == nc and o.GetLayer() == t.GetLayer()]
+            for end in (t.GetStart(), t.GetEnd()):
+                hit = any(p.GetNetCode() == nc and p.HitTest(end) for p in pads) or \
+                    any(v.GetNetCode() == nc and v.HitTest(end) for v in vias) or \
+                    any(o.HitTest(end, 0) for o in same)
+                if hit:
+                    continue
+                # free end: keep the segment if another track joins it part-way (a T joint)
+                other = t.GetEnd() if end == t.GetStart() else t.GetStart()
+                joined = [q for o in same for q in (o.GetStart(), o.GetEnd())
+                          if t.HitTest(q, 0) and (q - other).EuclideanNorm() > t.GetWidth()]
+                if not joined:
+                    dead.append(t)
+                else:                         # trim the antenna back to the outermost joint
+                    q = max(joined, key=lambda q: (q - other).EuclideanNorm())
+                    if end == t.GetStart():
+                        t.SetStart(q)
+                    else:
+                        t.SetEnd(q)
+                break
+        if not dead:
+            # drop zero-length leftovers and segments lying entirely on a wider/equal same-net track
+            dead = []
+            for t in tracks:      # sequential, so one of two identical duplicates survives
+                if (t.GetStart() - t.GetEnd()).EuclideanNorm() < 50000 or \
+                        any(o is not t and o not in dead and o.GetNetCode() == t.GetNetCode() and
+                            o.GetLayer() == t.GetLayer() and o.GetWidth() >= t.GetWidth() and
+                            o.HitTest(t.GetStart(), 0) and o.HitTest(t.GetEnd(), 0) for o in tracks):
+                    dead.append(t)
+            if not dead:
+                break
+        for t in dead:
+            b.Remove(t)
+        removed += len(dead)
+    print("dangling segments removed:", removed)
 
 
 def geometry(b, netcode):
