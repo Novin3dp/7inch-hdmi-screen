@@ -194,8 +194,9 @@ C("C27", "1uF", "+3V3", "GND", S, lcsc=L_1U)
 C("C28", "100nF", "+3V3", "GND", S, lcsc=L_100N)
 
 # --- bias supply, switched by MCU (BIAS_EN) for correct power sequencing
-P("Q1", "Transistor_FET", "AO3401A", "AO3401A", F_SOT23, {1: "BIAS_G", 2: "+5V", 3: "BOOST_IN"}, S,
-  mpn="AO3401A", lcsc="C15127")
+# AO3415 (AOS, Rev 7): -20 V, VGS +/-8 V (gate sees 0 / -5 V), RDS(on) < 41 mOhm @ -4.5 V; SOT-23 1 G, 2 S, 3 D
+P("Q1", "Transistor_FET", "AO3401A", "AO3415", F_SOT23, {1: "BIAS_G", 2: "+5V", 3: "BOOST_IN"}, S,
+  mpn="AO3415")
 R("R22", "100k", "BIAS_G", "+5V", S, lcsc=L_100K)
 P("Q2", "Transistor_FET", "2N7002", "2N7002", F_SOT23, {1: "BIAS_EN", 2: "GND", 3: "BIAS_G"}, S,
   mpn="2N7002", lcsc="C8545")
